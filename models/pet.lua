@@ -7,8 +7,8 @@ function Pet:initialize(name)
     self.name = name
     self.birthday = os.time()
     self.state = PetState.NORMAL
-    self.happiness = 80
-    self.hunger = 0
+    self.happiness = 100
+    self.hunger = 100
     self.health = 100
     -- self.minigames = {}
 end
