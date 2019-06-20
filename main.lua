@@ -9,8 +9,10 @@ local Pet = require "./models/pet"
 local ui
 local pet
 
+local healthIcon = love.graphics.newImage "assets/heart.png"
+
 local colors = {
-    ["text"] = "#afafaf",
+    ["text"] = "#000000",
     ["window"] = "#f2f6fc",
     ["header"] = "#282828",
     ["border"] = "#414141",
@@ -48,7 +50,6 @@ function love.load()
     ui:styleLoadColors(colors)
 
     pet = Pet:new("Jorge")
-
     print(pet.state)
 end
 
@@ -57,10 +58,26 @@ local combo = {value = 1, items = {"A", "B", "C"}}
 function love.update(dt)
     ui:frameBegin()
     if ui:windowBegin("VirtualPet 3000", 0, 0, 250, 400) then
-        ui:layoutRow("dynamic", 30, 1)
-        ui:label("Hello, world!")
-    -- ui:layoutRow("dynamic", 30, 2)
-    -- ui:label("Combo box:")
+        ui:layoutRow("dynamic", 40, 1)
+        ui:label(pet.name, "centered")
+
+        ui:layoutRow("static", 15, {65, 130, 5, 20})
+        ui:label("Health")
+        ui:progress(50, 100)
+        ui:spacing(1)
+        ui:image(healthIcon)
+
+        ui:layoutRow("static", 15, {65, 130, 5, 20})
+        ui:label("Happiness")
+        ui:progress(50, 100)
+        ui:spacing(1)
+        ui:image(healthIcon)
+
+        ui:layoutRow("static", 15, {65, 130, 5, 20})
+        ui:label("Hunger")
+        ui:progress(50, 100)
+        ui:spacing(1)
+        ui:image(healthIcon)
     -- if ui:combobox(combo, combo.items) then
     --     print("Combo!", combo.items[combo.value])
     -- end
