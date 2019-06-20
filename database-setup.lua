@@ -11,4 +11,4 @@ function Database:initialize()
     self.minigames = client:getCollection(dbName, "minigames")
 end
 
-db = Database:new()
+return Database:new()
