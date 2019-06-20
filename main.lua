@@ -1,11 +1,13 @@
 local db = require "database-setup"
 local nuklear = require "nuklear"
+local Pet = require "./models/pet"
 
 -- local user1 = db.users:findOne {username = "jorge"}
 -- print(user1)
 -- user1 = db.users:findOne {username = "jorgesad"}
 
 local ui
+local pet
 
 local colors = {
     ["text"] = "#afafaf",
@@ -44,6 +46,10 @@ function love.load()
 
     ui = nuklear.newUI()
     ui:styleLoadColors(colors)
+
+    pet = Pet:new("Jorge")
+
+    print(pet.state)
 end
 
 local combo = {value = 1, items = {"A", "B", "C"}}

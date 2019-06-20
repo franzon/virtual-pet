@@ -1,4 +1,4 @@
-local class = require "middleclass"
+local class = require "./libs/middleclass"
 local mongo = require "mongo"
 
 local Database = class("Database")
