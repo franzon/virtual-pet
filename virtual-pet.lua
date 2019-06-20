@@ -1,6 +1,7 @@
-local mongo = require "mongo"
-local client = mongo.Client("mongodb://127.0.0.1")
+require("database-setup")
 
-local Users = client:getCollection("virtual-pet", "users")
+local user1 = db.users:findOne {username = "jorge"}
+print(user1)
 
-Users:insert {username = "jorge", password = "1234", pets = {__array = true, "a", "b"}}
+user1 = db.users:findOne {username = "jorgesad"}
+print(user1)
