@@ -16,50 +16,16 @@ local feedIcon = love.graphics.newImage "assets/feed.png"
 
 local normalPicture = love.graphics.newImage "assets/normal.png"
 
-local colors = {
-    ["text"] = "#000000",
-    ["window"] = "#f2f6fc",
-    ["header"] = "#282828",
-    ["border"] = "#414141",
-    ["button"] = "#81858c",
-    ["button hover"] = "#282828",
-    ["button active"] = "#232323",
-    ["toggle"] = "#646464",
-    ["toggle hover"] = "#787878",
-    ["toggle cursor"] = "#2d2d2d",
-    ["select"] = "#2d2d2d",
-    ["select active"] = "#232323",
-    ["slider"] = "#262626",
-    ["slider cursor"] = "#646464",
-    ["slider cursor hover"] = "#787878",
-    ["slider cursor active"] = "#969696",
-    ["property"] = "#262626",
-    ["edit"] = "#262626",
-    ["edit cursor"] = "#afafaf",
-    ["combo"] = "#2d2d2d",
-    ["chart"] = "#787878",
-    ["chart color"] = "#2d2d2d",
-    ["chart color highlight"] = "#ff0000",
-    ["scrollbar"] = "#282828",
-    ["scrollbar cursor"] = "#646464",
-    ["scrollbar cursor hover"] = "#787878",
-    ["scrollbar cursor active"] = "#969696",
-    ["tab header"] = "#282828",
-    ["progress"] = "#ff0000"
-}
-
 function love.load()
-    love.window.setMode(300, 400)
+    love.window.setMode(1000, 820)
     love.window.setTitle("VirtualPet 3000")
 
-    ui = nuklear.newUI()
-    ui:styleLoadColors(colors)
+    background = love.graphics.newImage "assets/bg.jpg"
+    header = love.graphics.newImage "assets/header.jpg"
 
     pet = Pet:new("Jorge")
     print(pet.state)
 end
-
-local combo = {value = 1, items = {"A", "B", "C"}}
 
 function game_logic(dt)
     if pet.state.value == PetState.NORMAL.value then
@@ -73,91 +39,97 @@ function game_logic(dt)
     elseif pet.state.value == PetState.DEAD.value then
     end
 
-    if pet.health == 0 then
+    if pet.health <= 0 then
         pet.state = PetState.DEAD
+    end
+
+    if pet.happiness <= 0 then
+        pet.state = PetState.SAD
+    end
+
+    if pet.hunger <= 0 then
+        pet.state = PetState.SICK
     end
 end
 
 function love.update(dt)
-    ui:frameBegin()
-    if ui:windowBegin("VirtualPet 3000", 0, 0, 300, 500) then
-        ui:layoutRow("static", 25, {70, 150, 50})
-        ui:label(pet.name, "left", nuklear.colorRGBA(0, 0, 255))
+    game_logic(dt)
+end
 
-        local lifetime = os.time() - pet.birthday
-        ui:label("Age: " .. math.floor(lifetime / 60) .. " minute(s)")
-        ui:button("Exit")
+function draw_bar(x, y, percent)
+    love.graphics.setColor(127 / 255, 127 / 255, 127 / 255)
+    love.graphics.rectangle("line", x, y, 120, 1)
 
-        ui:layoutRow("dynamic", 5, 1)
-        ui:spacing(1)
-
-        ui:layoutRow("static", 15, {70, 150, 5, 20})
-        ui:label("Health")
-        ui:progress(pet.health, 100)
-        ui:spacing(1)
-        ui:image(healthIcon)
-
-        ui:layoutRow("static", 15, {70, 150, 5, 20})
-        ui:label("Happiness")
-        ui:progress(pet.happiness, 100)
-        ui:spacing(1)
-        ui:image(healthIcon)
-
-        ui:layoutRow("static", 15, {70, 150, 5, 20})
-        ui:label("Hunger")
-        ui:progress(pet.hunger, 100)
-        ui:spacing(1)
-        ui:image(healthIcon)
-
-        ui:layoutRow("dynamic", 20, 1)
-        ui:spacing(1)
-
-        ui:layoutRow("static", 100, {50, 200, 50})
-        ui:spacing(1)
-        ui:image(normalPicture)
-        ui:spacing(1)
-
-        ui:layoutRow("dynamic", 30, 5)
-        ui:image(feedIcon)
-        ui:image(feedIcon)
-        ui:image(feedIcon)
-        ui:image(feedIcon)
-        ui:image(feedIcon)
-
-        game_logic(dt)
+    if percent < 25 then
+        love.graphics.setColor(255 / 255, 0, 0)
+    elseif percent < 50 then
+        love.graphics.setColor(127 / 255, 127 / 255, 0)
+    elseif percent < 75 then
+        love.graphics.setColor(0, 127 / 255, 0)
+    else
+        love.graphics.setColor(0, 255 / 255, 0)
     end
-    ui:windowEnd()
-    ui:frameEnd()
+
+    love.graphics.rectangle("line", x, y, (percent / 100) * 120, 1)
+    love.graphics.setColor(255, 255, 255)
 end
 
 function love.draw()
-    ui:draw()
+    love.graphics.draw(background, 0, 160)
+    love.graphics.draw(header, 0, 0)
+    love.graphics.draw(header, 0, 660)
+
+    draw_bar(260, 60, pet.happiness)
+    draw_bar(260, 75, pet.hunger)
+    draw_bar(260, 90, pet.health)
+
+    local lifetime = math.floor((os.time() - pet.birthday) / 60)
+
+    love.graphics.print(pet.name, 500, 63, 0, 1.25, 1.25, 0, 0)
+    love.graphics.print(lifetime .. " minutos de vida", 470, 85, 0, 1, 1, 0, 0)
+
+    love.graphics.draw(feedIcon, 260, 700, 0, 0.5, 0.5) -- 0 is for rotation, see the wiki
 end
 
-function love.keypressed(key, scancode, isrepeat)
-    ui:keypressed(key, scancode, isrepeat)
-end
-
-function love.keyreleased(key, scancode)
-    ui:keyreleased(key, scancode)
-end
-
-function love.mousepressed(x, y, button, istouch, presses)
-    ui:mousepressed(x, y, button, istouch, presses)
-end
-
-function love.mousereleased(x, y, button, istouch, presses)
-    ui:mousereleased(x, y, button, istouch, presses)
-end
-
-function love.mousemoved(x, y, dx, dy, istouch)
-    ui:mousemoved(x, y, dx, dy, istouch)
-end
-
-function love.textinput(text)
-    ui:textinput(text)
-end
-
-function love.wheelmoved(x, y)
-    ui:wheelmoved(x, y)
-end
+-- function love.update(dt)
+--     -- ui:frameBegin()
+--     -- if ui:windowBegin("VirtualPet 3000", 0, 0, 300, 500) then
+--     --     ui:layoutRow("static", 25, {70, 150, 50})
+--     --     ui:label(pet.name, "left", nuklear.colorRGBA(0, 0, 255))
+--     --     local lifetime = os.time() - pet.birthday
+--     --     ui:label("Age: " .. math.floor(lifetime / 60) .. " minute(s)")
+--     --     ui:button("Exit")
+--     --     ui:layoutRow("dynamic", 5, 1)
+--     --     ui:spacing(1)
+--     --     ui:layoutRow("static", 15, {70, 150, 5, 20})
+--     --     ui:label("Health")
+--     --     ui:progress(pet.health, 100)
+--     --     ui:spacing(1)
+--     --     ui:image(healthIcon)
+--     --     ui:layoutRow("static", 15, {70, 150, 5, 20})
+--     --     ui:label("Happiness")
+--     --     ui:progress(pet.happiness, 100)
+--     --     ui:spacing(1)
+--     --     ui:image(healthIcon)
+--     --     ui:layoutRow("static", 15, {70, 150, 5, 20})
+--     --     ui:label("Hunger")
+--     --     ui:progress(pet.hunger, 100)
+--     --     ui:spacing(1)
+--     --     ui:image(healthIcon)
+--     --     ui:layoutRow("dynamic", 20, 1)
+--     --     ui:spacing(1)
+--     --     ui:layoutRow("static", 100, {50, 200, 50})
+--     --     ui:spacing(1)
+--     --     ui:image(normalPicture)
+--     --     ui:spacing(1)
+--     --     ui:layoutRow("dynamic", 30, 5)
+--     --     ui:image(feedIcon)
+--     --     ui:image(feedIcon)
+--     --     ui:image(feedIcon)
+--     --     ui:image(feedIcon)
+--     --     ui:image(feedIcon)
+--     --     game_logic(dt)
+--     -- end
+--     -- ui:windowEnd()
+--     -- ui:frameEnd()
+-- end
