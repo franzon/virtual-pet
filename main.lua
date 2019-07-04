@@ -12,16 +12,23 @@ local ui
 local pet
 
 local healthIcon = love.graphics.newImage "assets/heart.png"
-local feedIcon = love.graphics.newImage "assets/feed.png"
-
 local normalPicture = love.graphics.newImage "assets/normal.png"
+
+local imageFile
+local frames = {}
+
+local activeFrame
+local currentFrame = 1
 
 function love.load()
     love.window.setMode(1000, 820)
     love.window.setTitle("VirtualPet 3000")
 
-    background = love.graphics.newImage "assets/bg.jpg"
+    background = love.graphics.newImage "assets/bg.png"
     header = love.graphics.newImage "assets/header.jpg"
+
+    feedIcon = love.graphics.newImage "assets/feed.png"
+    poopIcon = love.graphics.newImage "assets/poop.png"
 
     pet = Pet:new("Jorge")
     print(pet.state)
@@ -75,7 +82,7 @@ function draw_bar(x, y, percent)
 end
 
 function love.draw()
-    love.graphics.draw(background, 0, 160)
+    -- love.graphics.draw(background, 0, 160)
     love.graphics.draw(header, 0, 0)
     love.graphics.draw(header, 0, 660)
 
@@ -88,7 +95,10 @@ function love.draw()
     love.graphics.print(pet.name, 500, 63, 0, 1.25, 1.25, 0, 0)
     love.graphics.print(lifetime .. " minutos de vida", 470, 85, 0, 1, 1, 0, 0)
 
-    love.graphics.draw(feedIcon, 260, 700, 0, 0.5, 0.5) -- 0 is for rotation, see the wiki
+    love.graphics.draw(feedIcon, 260, 700, 0, 0.5, 0.5)
+    love.graphics.draw(poopIcon, 300, 700, 0, 0.2, 0.2)
+
+    love.graphics.setBackgroundColor(43 / 255, 33 / 255, 33 / 255, 0)
 end
 
 -- function love.update(dt)
