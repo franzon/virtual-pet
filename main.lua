@@ -1,4 +1,3 @@
-
 local rates = require "rates"
 local PetState = require "./models/pet-state"
 local Pet = require "./models/pet"
@@ -10,22 +9,24 @@ local Pet = require "./models/pet"
 local ui
 local pet
 
+function love.conf(t)
+    t.console = true
+end
 
 function love.load()
     love.window.setMode(800, 600)
     love.window.setTitle("VirtualPet")
 
-    cureIcon = love.graphics.newImage "assets/actions/cure.png"
-    feedIcon = love.graphics.newImage "assets/actions/feed.png"
-    lightsIcon = love.graphics.newImage "assets/actions/lights.png"
-    playIcon = love.graphics.newImage "assets/actions/play.png"
-    poopIcon = love.graphics.newImage "assets/actions/poop.png"
-    washIcon = love.graphics.newImage "assets/actions/wash.png"
+    cureIcon = {img = love.graphics.newImage("assets/actions/cure.png"), x = 480, y = 35}
+    feedIcon = {img = love.graphics.newImage("assets/actions/feed.png"), x = 530, y = 35}
+    lightsIcon = {img = love.graphics.newImage("assets/actions/lights.png"), x = 580, y = 35}
+    playIcon = {img = love.graphics.newImage("assets/actions/play.png"), x = 630, y = 35}
+    poopIcon = {img = love.graphics.newImage("assets/actions/poop.png"), x = 680, y = 35}
+    washIcon = {img = love.graphics.newImage("assets/actions/wash.png"), x = 730, y = 35}
 
     happyIcon = love.graphics.newImage "assets/indicators/happy.png"
     foodIcon = love.graphics.newImage "assets/indicators/food.png"
     heartIcon = love.graphics.newImage "assets/indicators/heart.png"
-
 
     pet = Pet:new("Jorge")
     print(pet.state)
@@ -53,6 +54,18 @@ function game_logic(dt)
 
     if pet.hunger <= 0 then
         pet.state = PetState.SICK
+    end
+
+    if pet.health > 100 then
+        pet.health = 100
+    end
+
+    if pet.happiness > 100 then
+        pet.happiness = 100
+    end
+
+    if pet.hunger > 100 then
+        pet.hunger = 100
     end
 end
 
@@ -82,10 +95,8 @@ function love.draw()
     -- love.graphics.draw(background, 0, 160)
     -- love.graphics.draw(header, 0, 0)
     -- love.graphics.draw(header, 0, 660)
-    love.graphics.setColor(5/255, 6 / 255, 8/255)
+    love.graphics.setColor(5 / 255, 6 / 255, 8 / 255)
     love.graphics.rectangle("fill", 0, 0, 800, 100)
-
-
 
     love.graphics.setColor(255, 255, 255)
 
@@ -102,13 +113,38 @@ function love.draw()
     love.graphics.print(pet.name, 280, 20, 0, 2, 2, 0, 0)
     love.graphics.print(lifetime .. " minutos de vida", 280, 55, 0, 1.2, 1.2, 0, 0)
 
-    love.graphics.draw(cureIcon, 480, 35, 0, 0.5, 0.5)
-    love.graphics.draw(feedIcon, 530, 35, 0, 0.5, 0.5)
-    love.graphics.draw(lightsIcon, 580, 35, 0, 0.5, 0.5)
-    love.graphics.draw(playIcon, 630, 35, 0, 0.5, 0.5)
-    love.graphics.draw(poopIcon, 680, 35, 0, 0.5, 0.5)
-    love.graphics.draw(washIcon, 730, 35, 0, 0.5, 0.5)
-
+    love.graphics.draw(cureIcon.img, cureIcon.x, cureIcon.y, 0, 1, 1)
+    love.graphics.draw(feedIcon.img, feedIcon.x, feedIcon.y, 0, 1, 1)
+    love.graphics.draw(lightsIcon.img, lightsIcon.x, lightsIcon.y, 0, 1, 1)
+    love.graphics.draw(playIcon.img, playIcon.x, playIcon.y, 0, 1, 1)
+    love.graphics.draw(poopIcon.img, poopIcon.x, poopIcon.y, 0, 1, 1)
+    love.graphics.draw(washIcon.img, washIcon.x, washIcon.y, 0, 1, 1)
 
     love.graphics.setBackgroundColor(43 / 255, 33 / 255, 33 / 255, 0)
+end
+
+function action(type)
+    print(type)
+end
+
+function checkIconPressed(mx, my, icon)
+    return mx >= icon.x and mx < icon.x + icon.img:getWidth() and my >= icon.y and my < icon.y + icon.img:getHeight()
+end
+
+function love.mousepressed(mx, my, button)
+    if button == 1 then
+        if checkIconPressed(mx, my, cureIcon) then
+            action("cure")
+        elseif checkIconPressed(mx, my, feedIcon) then
+            action("feed")
+        elseif checkIconPressed(mx, my, lightsIcon) then
+            action("lights")
+        elseif checkIconPressed(mx, my, playIcon) then
+            action("play")
+        elseif checkIconPressed(mx, my, poopIcon) then
+            action("poop")
+        elseif checkIconPressed(mx, my, washIcon) then
+            action("wash")
+        end
+    end
 end
