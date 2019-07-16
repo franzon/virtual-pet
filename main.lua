@@ -1,10 +1,7 @@
 local rates = require "rates"
 local PetState = require "./models/pet-state"
+local PetAction = require "./models/pet-action"
 local Pet = require "./models/pet"
-
--- local user1 = db.users:findOne {username = "jorge"}
--- print(user1)
--- user1 = db.users:findOne {username = "jorgesad"}
 
 local ui
 local pet
@@ -34,26 +31,67 @@ end
 
 function game_logic(dt)
     if pet.state.value == PetState.NORMAL.value then
-        -- pet.health = pet.health - (rates.HAPPINESS_RATE * dt)
-        -- pet.hunger = pet.hunger - (1 * dt)
         pet.happiness = pet.happiness - (rates.HAPPINESS_RATE * dt)
+        pet.hunger = pet.hunger - (rates.HUNGER_RATE * dt)
+        pet.health = pet.health - (rates.HEALTH_RATE * dt)
     elseif pet.state.value == PetState.SICK.value then
+        pet.happiness = pet.happiness - (rates.HAPPINESS_RATE * dt * 2)
+        pet.hunger = pet.hunger - (rates.HUNGER_RATE * dt * 0.8)
+        pet.health = pet.health - (rates.HEALTH_RATE * dt * 1.5)
     elseif pet.state.value == PetState.TIRED.value then
+        pet.happiness = pet.happiness - (rates.HAPPINESS_RATE * dt * 2)
+        pet.hunger = pet.hunger - (rates.HUNGER_RATE * dt * 1.5)
+        pet.health = pet.health - (rates.HEALTH_RATE * dt)
+    elseif pet.state.value == PetState.DIRTY.value then
+        pet.happiness = pet.happiness - (rates.HAPPINESS_RATE * dt * 1.5)
+        pet.hunger = pet.hunger - (rates.HUNGER_RATE * dt)
+        pet.health = pet.health - (rates.HEALTH_RATE * dt * 2)
     elseif pet.state.value == PetState.SAD.value then
+        pet.happiness = pet.happiness - (rates.HAPPINESS_RATE * dt * 2)
+        pet.hunger = pet.hunger - (rates.HUNGER_RATE * dt * 1.5)
+        pet.health = pet.health - (rates.HEALTH_RATE * dt * 1.5)
     elseif pet.state.value == PetState.SLEEPING.value then
+        pet.happiness = pet.happiness + (rates.HAPPINESS_RATE * dt * 2)
+        pet.hunger = pet.hunger - (rates.HUNGER_RATE * dt * 0.5)
+        pet.health = pet.health + (rates.HEALTH_RATE * dt * 2)
+
+        if os.time() - pet.sleep_timer > rates.SLEEP_DURATION then
+            pet.state = PetState.NORMAL
+            print "acorda bro"
+        end
+    elseif pet.state.value == PetState.PLAYING.value then
+        pet.happiness = pet.happiness + (rates.HAPPINESS_RATE * dt * 4)
+        pet.hunger = pet.hunger - (rates.HUNGER_RATE * dt * 1.5)
+        pet.health = pet.health + (rates.HEALTH_RATE * dt)
+
+        if os.time() - pet.play_timer > rates.PLAY_DURATION then
+            pet.state = PetState.NORMAL
+            print "acabou a brincadeira bro"
+        end
     elseif pet.state.value == PetState.DEAD.value then
+        print "morreu playboy"
     end
 
+    -- health = 0 morre
     if pet.health <= 0 then
         pet.state = PetState.DEAD
     end
 
+    -- happiness = 0 fica sadboy
     if pet.happiness <= 0 then
         pet.state = PetState.SAD
     end
 
-    if pet.hunger <= 0 then
+    -- hunher = 0 ou  hunger > 90 ou health = 0 fica doente
+    if pet.hunger <= 0 or pet.health < 20 or pet.hunger > 90 then
         pet.state = PetState.SICK
+    end
+
+    -- fica sujo a cada intervalo de tempo
+    if pet.state ~= PetState.DIRTY then
+        if os.time() - pet.dirty_timer > rates.DIRTY_INTERVAL then
+            pet.state = PetState.DIRTY
+        end
     end
 
     if pet.health > 100 then
@@ -67,6 +105,8 @@ function game_logic(dt)
     if pet.hunger > 100 then
         pet.hunger = 100
     end
+
+    print(pet.state)
 end
 
 function love.update(dt)
@@ -77,7 +117,9 @@ function draw_bar(x, y, percent)
     love.graphics.setColor(127 / 255, 127 / 255, 127 / 255)
     love.graphics.rectangle("line", x, y, 150, 1)
 
-    if percent < 25 then
+    if percent < 0 then
+        percent = 0
+    elseif percent < 25 then
         love.graphics.setColor(255 / 255, 0, 0)
     elseif percent < 50 then
         love.graphics.setColor(127 / 255, 127 / 255, 0)
@@ -92,9 +134,6 @@ function draw_bar(x, y, percent)
 end
 
 function love.draw()
-    -- love.graphics.draw(background, 0, 160)
-    -- love.graphics.draw(header, 0, 0)
-    -- love.graphics.draw(header, 0, 660)
     love.graphics.setColor(5 / 255, 6 / 255, 8 / 255)
     love.graphics.rectangle("fill", 0, 0, 800, 100)
 
@@ -104,8 +143,8 @@ function love.draw()
     draw_bar(20, 50, pet.hunger)
     draw_bar(20, 80, pet.health)
 
-    love.graphics.draw(foodIcon, 190, 10, 0, 0.65, 0.65)
-    love.graphics.draw(happyIcon, 190, 40, 0, 0.65, 0.65)
+    love.graphics.draw(happyIcon, 190, 10, 0, 0.65, 0.65)
+    love.graphics.draw(foodIcon, 190, 40, 0, 0.65, 0.65)
     love.graphics.draw(heartIcon, 190, 70, 0, 0.65, 0.65)
 
     local lifetime = math.floor((os.time() - pet.birthday) / 60)
@@ -124,7 +163,29 @@ function love.draw()
 end
 
 function action(type)
-    print(type)
+    if type == "cure" then
+        if pet.health > 85 then
+            pet.health = 20
+            pet.state = PetState.SICK
+        else
+            pet.health = pet.health + 20
+        end
+    elseif type == "feed" then
+        pet.hunger = pet.hunger + 20
+    elseif type == "lights" then
+        pet.state = PetState.SLEEPING
+        pet.sleep_timer = os.time()
+    elseif type == "play" then
+        -- implementar minigame
+        pet.state = PetState.PLAYING
+        pet.play_timer = os.time()
+    elseif type == "poop" then
+        pet.state = PetState.DIRTY
+    elseif type == "wash" then
+        pet.health = pet.health + 10
+        pet.state = PetState.NORMAL
+        pet.dirty_timer = os.time()
+    end
 end
 
 function checkIconPressed(mx, my, icon)
