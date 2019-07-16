@@ -1,0 +1,3 @@
+#!/bin/sh
+unset LUA_PATH LUA_PATH_5_2 LUA_PATH_5_3 LUA_PATH_5_4
+LUAROCKS_SYSCONFDIR="/usr/local/etc/luarocks" LUA_PATH="/mnt/e/development/virtual-pet/luarocks-3.1.3/src/?.lua;;" exec "/usr/bin/lua5.3" "/mnt/e/development/virtual-pet/luarocks-3.1.3/src/bin/luarocks-admin" --project-tree="/mnt/e/development/virtual-pet/luarocks-3.1.3/lua_modules" "$@"

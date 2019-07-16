@@ -1,5 +1,4 @@
-local db = require "database-setup"
-local nuklear = require "nuklear"
+
 local rates = require "rates"
 local PetState = require "./models/pet-state"
 local Pet = require "./models/pet"
@@ -11,24 +10,22 @@ local Pet = require "./models/pet"
 local ui
 local pet
 
-local healthIcon = love.graphics.newImage "assets/heart.png"
-local normalPicture = love.graphics.newImage "assets/normal.png"
-
-local imageFile
-local frames = {}
-
-local activeFrame
-local currentFrame = 1
 
 function love.load()
-    love.window.setMode(1000, 820)
-    love.window.setTitle("VirtualPet 3000")
+    love.window.setMode(800, 600)
+    love.window.setTitle("VirtualPet")
 
-    background = love.graphics.newImage "assets/bg.png"
-    header = love.graphics.newImage "assets/header.jpg"
+    cureIcon = love.graphics.newImage "assets/actions/cure.png"
+    feedIcon = love.graphics.newImage "assets/actions/feed.png"
+    lightsIcon = love.graphics.newImage "assets/actions/lights.png"
+    playIcon = love.graphics.newImage "assets/actions/play.png"
+    poopIcon = love.graphics.newImage "assets/actions/poop.png"
+    washIcon = love.graphics.newImage "assets/actions/wash.png"
 
-    feedIcon = love.graphics.newImage "assets/feed.png"
-    poopIcon = love.graphics.newImage "assets/poop.png"
+    happyIcon = love.graphics.newImage "assets/indicators/happy.png"
+    foodIcon = love.graphics.newImage "assets/indicators/food.png"
+    heartIcon = love.graphics.newImage "assets/indicators/heart.png"
+
 
     pet = Pet:new("Jorge")
     print(pet.state)
@@ -65,7 +62,7 @@ end
 
 function draw_bar(x, y, percent)
     love.graphics.setColor(127 / 255, 127 / 255, 127 / 255)
-    love.graphics.rectangle("line", x, y, 120, 1)
+    love.graphics.rectangle("line", x, y, 150, 1)
 
     if percent < 25 then
         love.graphics.setColor(255 / 255, 0, 0)
@@ -77,69 +74,41 @@ function draw_bar(x, y, percent)
         love.graphics.setColor(0, 255 / 255, 0)
     end
 
-    love.graphics.rectangle("line", x, y, (percent / 100) * 120, 1)
+    love.graphics.rectangle("line", x, y, (percent / 100) * 150, 1)
     love.graphics.setColor(255, 255, 255)
 end
 
 function love.draw()
     -- love.graphics.draw(background, 0, 160)
-    love.graphics.draw(header, 0, 0)
-    love.graphics.draw(header, 0, 660)
+    -- love.graphics.draw(header, 0, 0)
+    -- love.graphics.draw(header, 0, 660)
+    love.graphics.setColor(5/255, 6 / 255, 8/255)
+    love.graphics.rectangle("fill", 0, 0, 800, 100)
 
-    draw_bar(260, 60, pet.happiness)
-    draw_bar(260, 75, pet.hunger)
-    draw_bar(260, 90, pet.health)
+
+
+    love.graphics.setColor(255, 255, 255)
+
+    draw_bar(20, 20, pet.happiness)
+    draw_bar(20, 50, pet.hunger)
+    draw_bar(20, 80, pet.health)
+
+    love.graphics.draw(foodIcon, 190, 10, 0, 0.65, 0.65)
+    love.graphics.draw(happyIcon, 190, 40, 0, 0.65, 0.65)
+    love.graphics.draw(heartIcon, 190, 70, 0, 0.65, 0.65)
 
     local lifetime = math.floor((os.time() - pet.birthday) / 60)
 
-    love.graphics.print(pet.name, 500, 63, 0, 1.25, 1.25, 0, 0)
-    love.graphics.print(lifetime .. " minutos de vida", 470, 85, 0, 1, 1, 0, 0)
+    love.graphics.print(pet.name, 280, 20, 0, 2, 2, 0, 0)
+    love.graphics.print(lifetime .. " minutos de vida", 280, 55, 0, 1.2, 1.2, 0, 0)
 
-    love.graphics.draw(feedIcon, 260, 700, 0, 0.5, 0.5)
-    love.graphics.draw(poopIcon, 300, 700, 0, 0.2, 0.2)
+    love.graphics.draw(cureIcon, 480, 35, 0, 0.5, 0.5)
+    love.graphics.draw(feedIcon, 530, 35, 0, 0.5, 0.5)
+    love.graphics.draw(lightsIcon, 580, 35, 0, 0.5, 0.5)
+    love.graphics.draw(playIcon, 630, 35, 0, 0.5, 0.5)
+    love.graphics.draw(poopIcon, 680, 35, 0, 0.5, 0.5)
+    love.graphics.draw(washIcon, 730, 35, 0, 0.5, 0.5)
+
 
     love.graphics.setBackgroundColor(43 / 255, 33 / 255, 33 / 255, 0)
 end
-
--- function love.update(dt)
---     -- ui:frameBegin()
---     -- if ui:windowBegin("VirtualPet 3000", 0, 0, 300, 500) then
---     --     ui:layoutRow("static", 25, {70, 150, 50})
---     --     ui:label(pet.name, "left", nuklear.colorRGBA(0, 0, 255))
---     --     local lifetime = os.time() - pet.birthday
---     --     ui:label("Age: " .. math.floor(lifetime / 60) .. " minute(s)")
---     --     ui:button("Exit")
---     --     ui:layoutRow("dynamic", 5, 1)
---     --     ui:spacing(1)
---     --     ui:layoutRow("static", 15, {70, 150, 5, 20})
---     --     ui:label("Health")
---     --     ui:progress(pet.health, 100)
---     --     ui:spacing(1)
---     --     ui:image(healthIcon)
---     --     ui:layoutRow("static", 15, {70, 150, 5, 20})
---     --     ui:label("Happiness")
---     --     ui:progress(pet.happiness, 100)
---     --     ui:spacing(1)
---     --     ui:image(healthIcon)
---     --     ui:layoutRow("static", 15, {70, 150, 5, 20})
---     --     ui:label("Hunger")
---     --     ui:progress(pet.hunger, 100)
---     --     ui:spacing(1)
---     --     ui:image(healthIcon)
---     --     ui:layoutRow("dynamic", 20, 1)
---     --     ui:spacing(1)
---     --     ui:layoutRow("static", 100, {50, 200, 50})
---     --     ui:spacing(1)
---     --     ui:image(normalPicture)
---     --     ui:spacing(1)
---     --     ui:layoutRow("dynamic", 30, 5)
---     --     ui:image(feedIcon)
---     --     ui:image(feedIcon)
---     --     ui:image(feedIcon)
---     --     ui:image(feedIcon)
---     --     ui:image(feedIcon)
---     --     game_logic(dt)
---     -- end
---     -- ui:windowEnd()
---     -- ui:frameEnd()
--- end
