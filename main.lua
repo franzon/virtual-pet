@@ -1,3 +1,4 @@
+local json = require "./libs/json"
 local rates = require "rates"
 local PetState = require "./models/pet-state"
 local PetAction = require "./models/pet-action"
@@ -27,8 +28,19 @@ function love.load()
     foodIcon = love.graphics.newImage "assets/indicators/food.png"
     heartIcon = love.graphics.newImage "assets/indicators/heart.png"
 
-    pet = Pet:new("Jorge")
-    print(pet.state)
+    local file = io.open("users.json", "r")
+    local content = json.decode(file:read "*a")
+    file:close()
+
+    pet = Pet:new()
+    pet.name = content.name
+    pet.state = PetState[content.state]
+    pet.happiness = content.happiness
+    pet.hunger = content.hunger
+    pet.health = content.health
+    pet.sleep_timer = content.sleep_timer
+    pet.play_timer = content.play_timer
+    pet.dirty_timer = content.dirty_timer
 end
 
 function game_logic(dt)
@@ -107,8 +119,6 @@ function game_logic(dt)
     if pet.hunger > 100 then
         pet.hunger = 100
     end
-
-    print(pet.state)
 end
 
 function love.update(dt)
@@ -170,27 +180,25 @@ function love.draw()
     if pet.state == PetState.NORMAL then
         local spriteNum = math.floor(animation.currentTime / animation.duration * #animation.quads) + 1
         love.graphics.draw(animation.spriteSheet, animation.quads[spriteNum], 0, 0, 0, 4)
-
     end
 end
 
 function newAnimation(image, width, height, duration)
     local animation = {}
-    animation.spriteSheet = image;
-    animation.quads = {};
- 
+    animation.spriteSheet = image
+    animation.quads = {}
+
     for y = 0, image:getHeight() - height, height do
         for x = 0, image:getWidth() - width, width do
             table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
         end
     end
- 
+
     animation.duration = duration or 1
     animation.currentTime = 0
- 
+
     return animation
 end
-
 
 function action(type)
     if type == "cure" then
@@ -238,4 +246,22 @@ function love.mousepressed(mx, my, button)
             action("wash")
         end
     end
+end
+
+function love.quit()
+    local file = io.open("users.json", "r")
+    local content = json.decode(file:read "*a")
+    file:close()
+
+    file = io.open("users.json", "w")
+
+    content.state = pet.state.value
+    content.happiness = math.floor(pet.happiness)
+    content.hunger = math.floor(pet.hunger)
+    content.health = math.floor(pet.health)
+    content.sleep_timer = pet.sleep_timer
+    content.play_timer = pet.play_timer
+    content.dirty_timer = pet.dirty_timer
+    file:write(json.encode(content))
+    file:close()
 end
