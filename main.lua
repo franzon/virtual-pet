@@ -11,6 +11,7 @@ function love.conf(t)
 end
 
 function love.load()
+    animation = newAnimation(love.graphics.newImage("/assets/sprites/normal.png"), 32, 32, 1)
     love.window.setMode(800, 600)
     love.window.setTitle("VirtualPet")
 
@@ -110,6 +111,10 @@ function game_logic(dt)
 end
 
 function love.update(dt)
+    animation.currentTime = animation.currentTime + dt
+    if animation.currentTime >= animation.duration then
+        animation.currentTime = animation.currentTime - animation.duration
+    end
     game_logic(dt)
 end
 
@@ -160,7 +165,31 @@ function love.draw()
     love.graphics.draw(washIcon.img, washIcon.x, washIcon.y, 0, 1, 1)
 
     love.graphics.setBackgroundColor(43 / 255, 33 / 255, 33 / 255, 0)
+    love.graphics.translate(350, 320)
+    if pet.state == PetState.NORMAL then
+        local spriteNum = math.floor(animation.currentTime / animation.duration * #animation.quads) + 1
+        love.graphics.draw(animation.spriteSheet, animation.quads[spriteNum], 0, 0, 0, 4)
+
+    end
 end
+
+function newAnimation(image, width, height, duration)
+    local animation = {}
+    animation.spriteSheet = image;
+    animation.quads = {};
+ 
+    for y = 0, image:getHeight() - height, height do
+        for x = 0, image:getWidth() - width, width do
+            table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
+        end
+    end
+ 
+    animation.duration = duration or 1
+    animation.currentTime = 0
+ 
+    return animation
+end
+
 
 function action(type)
     if type == "cure" then
