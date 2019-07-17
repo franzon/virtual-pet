@@ -2,7 +2,7 @@ local rates = require "rates"
 local PetState = require "./models/pet-state"
 local PetAction = require "./models/pet-action"
 local Pet = require "./models/pet"
-
+local sound = require "sound"
 local ui
 local pet
 
@@ -11,6 +11,7 @@ function love.conf(t)
 end
 
 function love.load()
+    sound()
     animation = newAnimation(love.graphics.newImage("/assets/sprites/normal.png"), 32, 32, 1)
     love.window.setMode(800, 600)
     love.window.setTitle("VirtualPet")
